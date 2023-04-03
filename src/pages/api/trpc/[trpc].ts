@@ -1,18 +1,19 @@
 import * as trpcNext from '@trpc/server/adapters/next';
 import { z } from 'zod';
+import { PrismaClient } from '@prisma/client';
 
 import { publicProcedure, router } from '~/server/trpc';
 
 
-const messages: string[] = [];
+const prisma = new PrismaClient();
 
 const appRouter = router({
 	list: publicProcedure
-		.query(() => ({ messages })),
+		.query(() => prisma.message.findMany()),
 	post: publicProcedure
 		.input(z.string())
-		.mutation(({ input }) => {
-			messages.push(input);
+		.mutation(async ({ input }) => {
+			await prisma.message.create({ data: { body: input } });
 		}),
 
 });

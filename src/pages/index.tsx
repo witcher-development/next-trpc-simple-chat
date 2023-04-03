@@ -21,7 +21,7 @@ export default function IndexPage () {
 		<div style={styles}>
 			<h1>Chat</h1>
 			<ul>
-				{data.messages.map((message) => (
+				{data.map(({ body: message }) => (
 					<li key={message}>{message}</li>
 				))}
 			</ul>
