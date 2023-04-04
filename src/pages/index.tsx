@@ -9,10 +9,10 @@ const styles = {
 export default function IndexPage () {
 	const context = trpc.useContext();
 
-	const { data, status } = trpc.list.useQuery();
-	const { mutate: post } = trpc.post.useMutation({
+	const { data, status } = trpc.messages.list.useQuery();
+	const { mutate: post } = trpc.messages.post.useMutation({
 		onSuccess: () => {
-			context.list.invalidate();
+			context.messages.list.invalidate();
 		}
 	});
 

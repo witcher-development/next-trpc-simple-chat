@@ -8,9 +8,31 @@
  * @see https://trpc.io/docs/v10/procedures
  */
 import { initTRPC } from '@trpc/server';
+import superjson from 'superjson';
+import { ZodError } from 'zod';
 
 
-const t = initTRPC.create();
+
+import { prisma } from '~/server/db';
+
+
+export const createTRPCContext = () => ({
+	prisma
+});
+
+const t = initTRPC.context<typeof createTRPCContext>().create({
+	transformer: superjson,
+	errorFormatter ({ shape, error }) {
+		return {
+			...shape,
+			data: {
+				...shape.data,
+				zodError:
+					error.cause instanceof ZodError ? error.cause.flatten() : null,
+			},
+		};
+	},
+});
 
 /**
  * Unprotected procedure
