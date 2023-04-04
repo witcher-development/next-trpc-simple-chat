@@ -16,5 +16,6 @@ npm run dev
 ### Start project
 
 ```bash
+docker-compose up -d
 npm run dev        # starts next.js
 ```
