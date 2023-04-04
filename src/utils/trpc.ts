@@ -3,6 +3,7 @@ import { createTRPCNext } from '@trpc/next';
 import superjson from 'superjson';
 
 import type { AppRouter } from '~/server/api/root';
+import { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
 
 const getBaseUrl = () => {
@@ -34,3 +35,6 @@ export const trpc = createTRPCNext<AppRouter>({
 	},
 	ssr: true,
 });
+
+export type RouterInputs = inferRouterInputs<AppRouter>;
+export type RouterOutputs = inferRouterOutputs<AppRouter>;

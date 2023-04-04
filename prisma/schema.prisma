@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,8 +8,7 @@ datasource db {
 }
 
 model Message {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
-  body       String
-  createdAt  DateTime @default(now()) @map("created_at")
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  text       String
+  created_at DateTime @db.Date @default(now())
 }
-

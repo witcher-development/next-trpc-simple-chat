@@ -4,6 +4,7 @@ import * as z from 'zod';
 
 
 import { trpc } from '~/utils/trpc';
+import { messageTextSchema } from '~/common/types';
 
 
 const styles = {
@@ -12,7 +13,7 @@ const styles = {
 };
 
 const schema = z.object({
-	message: z.string().min(1, { message: 'Required' }).max(1024),
+	text: messageTextSchema,
 });
 
 export default function IndexPage () {
@@ -27,8 +28,8 @@ export default function IndexPage () {
 		}
 	});
 
-	const sendMessage = handleSubmit(({ message }) => {
-		post(message);
+	const sendMessage = handleSubmit(({ text }) => {
+		post({ type: 'plain', text });
 		reset();
 	});
 
@@ -37,12 +38,12 @@ export default function IndexPage () {
 		<div style={styles}>
 			<h1>Chat</h1>
 			<ul>
-				{data.map(({ body: message }) => (
+				{data.map(({ text: message }) => (
 					<li key={message}>{message}</li>
 				))}
 			</ul>
 			<form onSubmit={sendMessage}>
-				<input {...register('message')} />
+				<input {...register('text')} />
 				<input type="submit" value="Post" />
 			</form>
 		</div>
