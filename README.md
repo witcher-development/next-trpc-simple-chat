@@ -15,6 +15,10 @@ npm run dev
 
 ### Start project
 
+For local development add
+DATABASE_URL="mongodb://localhost:27017/chat?directConnection=true"
+to .env
+
 ```bash
 docker-compose up -d
 npm run dev        # starts next.js
