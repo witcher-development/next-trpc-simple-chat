@@ -1,3 +1,8 @@
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+
 import { trpc } from '~/utils/trpc';
 
 
@@ -6,7 +11,13 @@ const styles = {
 	height: '100vh',
 };
 
+const schema = z.object({
+	message: z.string().min(1, { message: 'Required' }).max(1024),
+});
+
 export default function IndexPage () {
+	const { register, reset, handleSubmit } = useForm<z.TypeOf<typeof schema>>({ resolver: zodResolver(schema) });
+
 	const context = trpc.useContext();
 
 	const { data, status } = trpc.messages.list.useQuery();
@@ -14,6 +25,11 @@ export default function IndexPage () {
 		onSuccess: () => {
 			context.messages.list.invalidate();
 		}
+	});
+
+	const sendMessage = handleSubmit(({ message }) => {
+		post(message);
+		reset();
 	});
 
 	if (status !== 'success') return <></>;
@@ -25,7 +41,10 @@ export default function IndexPage () {
 					<li key={message}>{message}</li>
 				))}
 			</ul>
-			<button onClick={() => post(`${Math.random()}`)}>Post</button>
+			<form onSubmit={sendMessage}>
+				<input {...register('message')} />
+				<input type="submit" value="Post" />
+			</form>
 		</div>
 	);
 }
