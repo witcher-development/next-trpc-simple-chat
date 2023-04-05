@@ -31,7 +31,7 @@ type FormData = z.TypeOf<typeof schema>;
 
 const usePostMessage = () => {
 	const context = trpc.useContext();
-	const { mutate: post } = trpc.messages.post.useMutation({
+	const { mutateAsync: post } = trpc.messages.post.useMutation({
 		onSuccess: () => {
 			context.messages.list.invalidate();
 		},
@@ -41,6 +41,7 @@ const usePostMessage = () => {
 	return async ({ text, image }: FormData) => {
 		if (image) {
 			const optimisticID = new ObjectId().toString();
+			const renamedImage = new File([image[0]], optimisticID);
 			const optimisticImageURL = URL.createObjectURL(image[0]);
 			context.messages.list.setData(undefined, (existingData) => [...(existingData || []), {
 				id: optimisticID,
@@ -49,6 +50,12 @@ const usePostMessage = () => {
 				image: optimisticImageURL
 			}]);
 			const uploadURL = await post({ type: 'with-image', text, id: optimisticID });
+			if (uploadURL) {
+				await fetch(uploadURL, {
+					method: 'PUT',
+					body: renamedImage,
+				});
+			}
 		} else {
 			return post({ type: 'plain', text });
 		}
