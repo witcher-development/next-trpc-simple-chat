@@ -9,6 +9,7 @@ datasource db {
 
 model Message {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  text       String
+  text       String?
+  image      String?
   created_at DateTime @db.Date @default(now())
 }
