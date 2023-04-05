@@ -8,8 +8,9 @@ import { publicProcedure, router } from '~/server/api/trpc';
 import { messageTextSchema } from '~/common/types';
 
 
+const REGION = 'eu-central-1';
 const S3 = new S3Client({
-	region: 'eu-central-1',
+	region: REGION,
 	credentials: {
 		accessKeyId: process.env.S3_ACCESS_KEY as string,
 		secretAccessKey: process.env.S3_SECRET_KEY as string,
@@ -22,6 +23,8 @@ const getUploadUrl = async (filename: string) => {
 	});
 	return await getSignedUrl(S3, putCommand, { expiresIn: 100 });
 };
+const constructImageUrl = (imageName: string) =>
+	`https://${process.env.S3_BUCKET}.s3.${REGION}.amazonaws.com/${imageName}`;
 
 const postMessageSchema = z.discriminatedUnion('type', [
 	z.object({
@@ -30,7 +33,7 @@ const postMessageSchema = z.discriminatedUnion('type', [
 	}),
 	z.object({
 		type: z.literal('with-image'),
-		text: z.optional(messageTextSchema),
+		text: messageTextSchema,
 		id: z.string(),
 	})
 ]);
@@ -43,11 +46,17 @@ export const MessagesRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			switch (input.type) {
 				case 'plain': {
-					ctx.prisma.message.create({ data: { text: input.text } });
+					await ctx.prisma.message.create({ data: { text: input.text } });
 					return;
 				}
 				case 'with-image': {
-					ctx.prisma.message.create({ data: { id: input.id, text: input.text } });
+					await ctx.prisma.message.create({
+						data: {
+							id: input.id,
+							text: input.text,
+							image: constructImageUrl(input.id)
+						}
+					});
 					return await getUploadUrl(input.id);
 				}
 				default: {
