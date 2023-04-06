@@ -39,6 +39,7 @@ export const MessagesRouter = router({
 					return;
 				}
 				case 'with-image': {
+					// TODO: Fix. Other users might use link from Mongo to access image earlier than it is actually uploaded to S3
 					await ctx.prisma.message.create({
 						data: {
 							id: input.id,

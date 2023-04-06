@@ -30,7 +30,8 @@ export default function HomePage () {
 		formState: { errors }
 	} = useForm<ChatInputData>({ resolver: zodResolver(chatInputSchema) });
 
-	const { data, status } = trpc.messages.list.useQuery();
+	// TODO: Fix. Refetch happens in background
+	const { data, status } = trpc.messages.list.useQuery(undefined, { refetchInterval: 2000 });
 	const postMessage = usePostMessage();
 	const deleteMessage = useDeleteMessage();
 
