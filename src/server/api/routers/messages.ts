@@ -1,30 +1,10 @@
 import { z } from 'zod';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-
-import * as process from 'process';
 
 import { publicProcedure, router } from '~/server/api/trpc';
 import { messageTextSchema } from '~/common/types';
+import { constructImageUrl, getFileUploadUrl, deleteFile } from '~/server/s3';
 
 
-const REGION = 'eu-central-1';
-const S3 = new S3Client({
-	region: REGION,
-	credentials: {
-		accessKeyId: process.env.S3_ACCESS_KEY as string,
-		secretAccessKey: process.env.S3_SECRET_KEY as string,
-	},
-});
-const getUploadUrl = async (filename: string) => {
-	const putCommand = new PutObjectCommand({
-		Bucket: process.env.S3_BUCKET as string,
-		Key: filename,
-	});
-	return await getSignedUrl(S3, putCommand, { expiresIn: 100 });
-};
-const constructImageUrl = (imageName: string) =>
-	`https://${process.env.S3_BUCKET}.s3.${REGION}.amazonaws.com/${imageName}`;
 
 const postMessageSchema = z.discriminatedUnion('type', [
 	z.object({
@@ -38,6 +18,9 @@ const postMessageSchema = z.discriminatedUnion('type', [
 		id: z.string(),
 	})
 ]);
+const deleteMessageSchema = z.object({
+	id: z.string()
+});
 
 export const MessagesRouter = router({
 	list: publicProcedure
@@ -63,11 +46,22 @@ export const MessagesRouter = router({
 							image: constructImageUrl(input.id)
 						}
 					});
-					return await getUploadUrl(input.id);
+					return await getFileUploadUrl(input.id);
 				}
 				default: {
 					throw new Error('should not happen');
 				}
 			}
 		}),
+	delete: publicProcedure
+		.input(deleteMessageSchema)
+		.mutation(async ({ input: { id }, ctx }) => {
+			// TODO: handle not-exist error
+			const deletedMessage = await ctx.prisma.message.delete({
+				where: { id }
+			});
+			if (deletedMessage.image) {
+				deleteFile(id);
+			}
+		})
 });

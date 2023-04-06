@@ -11,7 +11,6 @@ const useOptimisticallyAddMessage = () => {
 	return (optimisticMessage: ReturnType<typeof getNewMessage>) =>
 		context.messages.list.setData(undefined, (existingData) => [...(existingData || []), optimisticMessage]);
 };
-
 export const usePostMessage = () => {
 	// TODO: on error delete optimistic rows
 	const { mutateAsync: post } = trpc.messages.post.useMutation();
@@ -39,4 +38,9 @@ export const usePostMessage = () => {
 			return post({ type: 'plain', text: data.text, id: optimisticMessage.id });
 		}
 	};
+};
+
+export const useDeleteMessage = () => {
+	const { mutate: deleteMessage } = trpc.messages.delete.useMutation();
+	return deleteMessage;
 };

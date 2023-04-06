@@ -6,7 +6,7 @@ import { trpc } from '~/utils/trpc';
 import { messageTextSchema } from '~/common/types';
 
 import { imageSchema } from './utils';
-import { usePostMessage } from './logic';
+import { usePostMessage, useDeleteMessage } from './logic';
 
 
 const styles = {
@@ -31,10 +31,11 @@ export default function HomePage () {
 	} = useForm<ChatInputData>({ resolver: zodResolver(chatInputSchema) });
 
 	const { data, status } = trpc.messages.list.useQuery();
-	const post = usePostMessage();
+	const postMessage = usePostMessage();
+	const deleteMessage = useDeleteMessage();
 
 	const sendMessage = handleSubmit((data) => {
-		post(data);
+		postMessage(data);
 		reset();
 	});
 
@@ -47,6 +48,7 @@ export default function HomePage () {
 					<li key={id}>
 						{text && <p>{ text }</p>}
 						{image && <img src={image} alt="image" width={200} />}
+						<button onClick={() => deleteMessage({ id })}>delete</button>
 					</li>
 				))}
 			</ul>
