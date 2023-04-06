@@ -29,7 +29,8 @@ const constructImageUrl = (imageName: string) =>
 const postMessageSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal('plain'),
-		text: messageTextSchema
+		text: messageTextSchema,
+		id: z.string(),
 	}),
 	z.object({
 		type: z.literal('with-image'),
@@ -46,7 +47,12 @@ export const MessagesRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			switch (input.type) {
 				case 'plain': {
-					await ctx.prisma.message.create({ data: { text: input.text } });
+					await ctx.prisma.message.create({
+						data: {
+							id: input.id,
+							text: input.text,
+						}
+					});
 					return;
 				}
 				case 'with-image': {

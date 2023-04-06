@@ -17,7 +17,8 @@ const styles = {
 
 const chatInputSchema = z.object({
 	text: messageTextSchema,
-	image: imageSchema.optional()
+	// image always has a value. It is an empty FileList by default.
+	image: imageSchema
 });
 export type ChatInputData = z.TypeOf<typeof chatInputSchema>;
 
