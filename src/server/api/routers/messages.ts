@@ -10,12 +10,10 @@ const postMessageSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal('plain'),
 		text: messageTextSchema,
-		id: z.string(),
 	}),
 	z.object({
 		type: z.literal('with-image'),
 		text: messageTextSchema,
-		id: z.string(),
 	})
 ]);
 const deleteMessageSchema = z.object({
@@ -30,24 +28,30 @@ export const MessagesRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			switch (input.type) {
 				case 'plain': {
-					await ctx.prisma.message.create({
+					const { id } = await ctx.prisma.message.create({
 						data: {
-							id: input.id,
 							text: input.text,
 						}
 					});
-					return;
+					return {
+						newId: id
+					};
 				}
 				case 'with-image': {
 					// TODO: Fix. Other users might use link from Mongo to access image earlier than it is actually uploaded to S3
-					await ctx.prisma.message.create({
+					const { id } = await ctx.prisma.message.create({
 						data: {
-							id: input.id,
 							text: input.text,
-							image: constructImageUrl(input.id)
 						}
 					});
-					return await getFileUploadUrl(input.id);
+					ctx.prisma.message.update({
+						where: { id },
+						data: { image: constructImageUrl(id) }
+					}).then();
+					return {
+						newId: id,
+						uploadUrl: await getFileUploadUrl(id)
+					};
 				}
 				default: {
 					throw new Error('should not happen');

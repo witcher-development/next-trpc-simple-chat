@@ -2,11 +2,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { trpc } from '~/utils/trpc';
 import { messageTextSchema } from '~/common/types';
 
 import { imageSchema } from './utils';
-import { usePostMessage, useDeleteMessage } from './logic';
+import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
 
 
 const styles = {
@@ -31,7 +30,7 @@ export default function HomePage () {
 	} = useForm<ChatInputData>({ resolver: zodResolver(chatInputSchema) });
 
 	// TODO: Fix. Refetch happens in background
-	const { data, status } = trpc.messages.list.useQuery(undefined, { refetchInterval: 2000 });
+	const { data, status } = useGetMessages();
 	const postMessage = usePostMessage();
 	const deleteMessage = useDeleteMessage();
 

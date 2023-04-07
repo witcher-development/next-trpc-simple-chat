@@ -6,11 +6,27 @@ import { renameFile, uploadImageToS3 } from './utils';
 import { ChatInputData } from './index';
 
 
+export const useGetMessages = () => trpc.messages.list.useQuery(undefined, { refetchInterval: 2000 });
+
 const useOptimisticallyAddMessage = () => {
 	const context = trpc.useContext();
+
+	// function to add message
 	return async (optimisticMessage: ReturnType<typeof getNewMessage>) => {
 		await context.messages.list.cancel();
-		context.messages.list.setData(undefined, (existingData) => [...(existingData || []), optimisticMessage]);
+		context.messages.list.setData(undefined, (existingData) => [optimisticMessage, ...(existingData || [])]);
+
+		// function to replace message
+		return async (newId: string) => {
+			await context.messages.list.cancel();
+			context.messages.list.setData(
+				undefined,
+				(existingData) => existingData?.map((m) => m.id !== optimisticMessage.id ? m : ({
+					...m,
+					id: newId
+				}))
+			);
+		};
 	};
 };
 export const usePostMessage = () => {
@@ -18,25 +34,27 @@ export const usePostMessage = () => {
 	const { mutateAsync: post } = trpc.messages.post.useMutation();
 	const optimisticallyAddMessage = useOptimisticallyAddMessage();
 
-	return async (data: ChatInputData) => {
-		if (data.image) {
-			const { image, text } = data;
+	return async (message: ChatInputData) => {
+		if (message.image) {
+			const { image, text } = message;
 
 			const optimisticMessage = getNewMessage({
 				text,
 				image: URL.createObjectURL(image)
 			});
-			optimisticallyAddMessage(optimisticMessage);
+			const replaceFakeIdWithReal = await optimisticallyAddMessage(optimisticMessage);
 
-			const uploadURL = await post({ type: 'with-image', text, id: optimisticMessage.id });
-			if (uploadURL) uploadImageToS3(renameFile(image, optimisticMessage.id), uploadURL);
+			const { newId, uploadUrl } = await post({ type: 'with-image', text });
+			if (uploadUrl) uploadImageToS3(renameFile(image, newId), uploadUrl);
+			replaceFakeIdWithReal(newId);
 		} else {
 			const optimisticMessage = getNewMessage({
-				text: data.text,
+				text: message.text,
 			});
-			optimisticallyAddMessage(optimisticMessage);
+			const replaceFakeIdWithReal = await optimisticallyAddMessage(optimisticMessage);
 
-			return post({ type: 'plain', text: data.text, id: optimisticMessage.id });
+			const { newId } = await post({ type: 'plain', text: message.text });
+			replaceFakeIdWithReal(newId);
 		}
 	};
 };
@@ -46,18 +64,10 @@ export const useDeleteMessage = () => {
 	const { mutate: deleteMessage } = trpc.messages.delete.useMutation({
 		onMutate: async ({ id }) => {
 			await context.messages.list.cancel();
-			const backupMessage = context.messages.list.getData()?.find((m) => m.id === id);
-			// TODO: use correct error constructor
-			if (!backupMessage) throw new Error('Attempt to delete non-existing message');
-
 			context.messages.list.setData(undefined, (messages) => messages?.filter((m) => m.id !== id));
-
-			return { backupMessage };
 		},
-		onError: (_error, _vars, backup) => {
-			if (!backup?.backupMessage) throw new Error('Backup message lost');
-			// doesn't matter at which location I put it back, because UI will be sorted.
-			context.messages.list.setData(undefined, (messages) => [...(messages || []), backup.backupMessage]);
+		onError: () => {
+			context.messages.list.invalidate();
 		}
 	});
 	return deleteMessage;
