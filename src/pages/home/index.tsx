@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,6 +7,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { messageTextSchema } from '~/common/types';
 
 import { imageSchema } from './utils';
+import { Sort } from './model';
 import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
 
 
@@ -29,11 +31,15 @@ export default function HomePage () {
 		handleSubmit,
 		formState: { errors }
 	} = useForm<ChatInputData>({ resolver: zodResolver(chatInputSchema) });
+	const [sort, setSort] = useState<Sort>({
+		field: 'createdAt',
+		order: 'desc'
+	});
 
 	// TODO: Fix. Refetch happens in background
-	const { data, status, fetchNextPage, hasNextPage } = useGetMessages();
-	const postMessage = usePostMessage();
-	const deleteMessage = useDeleteMessage();
+	const { data, status, fetchNextPage, hasNextPage } = useGetMessages(sort);
+	const postMessage = usePostMessage(sort);
+	const deleteMessage = useDeleteMessage(sort);
 
 	const sendMessage = handleSubmit((data) => {
 		postMessage(data);

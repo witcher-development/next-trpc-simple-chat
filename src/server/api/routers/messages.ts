@@ -5,7 +5,10 @@ import { messageTextSchema } from '~/common/types';
 import { constructImageUrl, getFileUploadUrl, deleteFile } from '~/server/s3';
 
 
-
+const sortSchema = z.object({
+	field: z.enum(['text', 'createdAt']).default('createdAt'),
+	order: z.enum(['asc', 'desc']).default('desc'),
+});
 const postMessageSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal('plain'),
@@ -20,19 +23,22 @@ const deleteMessageSchema = z.object({
 	id: z.string()
 });
 
+const mapSortFields = (field: z.infer<typeof sortSchema>['field']) => field === 'createdAt' ? 'id' : field;
+
 export const MessagesRouter = router({
 	list: publicProcedure
 		.input(z.object({
 			limit: z.number().default(20),
 			cursor: z.string().nullish(), // "cursor" needs to exist, but can be any type
+			sort: sortSchema
 		}))
 		.query(async ({ ctx, input }) => {
-			const { cursor, limit } = input;
+			const { cursor, limit, sort } = input;
 			const messages = await ctx.prisma.message.findMany({
 				take: limit + 1, // get an extra item at the end which we'll use as next cursor
 				cursor: cursor ? { id: cursor } : undefined,
 				orderBy: {
-					id: 'desc',
+					[mapSortFields(sort.field)]: sort.order,
 				},
 			});
 			let nextCursor: typeof cursor | undefined = undefined;

@@ -1,28 +1,28 @@
 import { produce } from 'immer';
 
 import { trpc } from '~/utils/trpc';
-import { getNewMessage } from '~/pages/home/model';
 
+import { getNewMessage, Sort } from './model';
 import { renameFile, uploadImageToS3 } from './utils';
 
 import { ChatInputData } from './index';
 
 
-export const useGetMessages = () => trpc.messages.list.useInfiniteQuery(
-	{},
+export const useGetMessages = (sort: Sort) => trpc.messages.list.useInfiniteQuery(
+	{ sort },
 	{
 		refetchInterval: 2000,
 		getNextPageParam: (lastPage) => lastPage.nextCursor
 	}
 );
 
-const useOptimisticallyAddMessage = () => {
+const useOptimisticallyAddMessage = (sort: Sort) => {
 	const context = trpc.useContext();
 
 	// function to add message
 	return async (optimisticMessage: ReturnType<typeof getNewMessage>) => {
 		await context.messages.list.cancel();
-		context.messages.list.setInfiniteData({}, (existingData) => {
+		context.messages.list.setInfiniteData({ sort }, (existingData) => {
 			if (!existingData || !existingData.pages || existingData?.pages.length === 0) return existingData;
 			// using immer to immutably change highly nested data
 			return produce(existingData, (newData) => {
@@ -34,7 +34,7 @@ const useOptimisticallyAddMessage = () => {
 		return async (newId: string) => {
 			await context.messages.list.cancel();
 			context.messages.list.setInfiniteData(
-				{},
+				{ sort },
 				(existingData) => {
 					if (!existingData || !existingData.pages) return existingData;
 					// using immer to immutably change highly nested data
@@ -54,10 +54,10 @@ const useOptimisticallyAddMessage = () => {
 		};
 	};
 };
-export const usePostMessage = () => {
+export const usePostMessage = (sort: Sort) => {
 	// TODO: on error delete optimistic rows
 	const { mutateAsync: post } = trpc.messages.post.useMutation();
-	const optimisticallyAddMessage = useOptimisticallyAddMessage();
+	const optimisticallyAddMessage = useOptimisticallyAddMessage(sort);
 
 	return async (message: ChatInputData) => {
 		if (message.image) {
@@ -84,12 +84,12 @@ export const usePostMessage = () => {
 	};
 };
 
-export const useDeleteMessage = () => {
+export const useDeleteMessage = (sort: Sort) => {
 	const context = trpc.useContext();
 	const { mutate: deleteMessage } = trpc.messages.delete.useMutation({
 		onMutate: async ({ id }) => {
 			await context.messages.list.cancel();
-			context.messages.list.setInfiniteData({}, (existingData) => {
+			context.messages.list.setInfiniteData({ sort }, (existingData) => {
 				if (!existingData || !existingData.pages) return existingData;
 				// using immer to immutably change highly nested data
 				return produce(existingData, (newData) => {
