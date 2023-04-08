@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { messageTextSchema } from '~/common/types';
 
@@ -30,7 +31,7 @@ export default function HomePage () {
 	} = useForm<ChatInputData>({ resolver: zodResolver(chatInputSchema) });
 
 	// TODO: Fix. Refetch happens in background
-	const { data, status } = useGetMessages();
+	const { data, status, fetchNextPage, hasNextPage } = useGetMessages();
 	const postMessage = usePostMessage();
 	const deleteMessage = useDeleteMessage();
 
@@ -43,20 +44,31 @@ export default function HomePage () {
 	return (
 		<div style={styles}>
 			<h1>Chat</h1>
-			<ul>
-				{data.map(({ id, text, image }) => (
-					<li key={id}>
-						{text && <p>{ text }</p>}
-						{image && <img src={image} alt="image" width={200} />}
-						<button onClick={() => deleteMessage({ id })}>delete</button>
-					</li>
-				))}
-			</ul>
-			<form onSubmit={sendMessage}>
+			<form onSubmit={sendMessage}
+				style={{
+					position: 'fixed',
+					top: '0',
+					background: '#fff'
+				}}
+			>
 				<input type="file" {...register('image')} />
 				<input {...register('text')} />
 				<input type="submit" value="Post" />
 			</form>
+			<InfiniteScroll
+				next={fetchNextPage}
+				hasMore={hasNextPage || false}
+				loader={<h4>Loading...</h4>}
+				dataLength={data?.pages.length * 20}
+			>
+				{data.pages.map(({ messages }) => messages.map(({ id, text, image }) => (
+					<li key={id} style={{ height: 100 }}>
+						{text && <p>{ text }</p>}
+						{image && <img src={image} alt="image" width={200} />}
+						<button onClick={() => deleteMessage({ id })}>delete</button>
+					</li>
+				)))}
+			</InfiniteScroll>
 		</div>
 	);
 }

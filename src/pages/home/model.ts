@@ -4,7 +4,7 @@ import { ObjectId } from 'bson';
 import { RouterOutputs } from '~/server/api/root';
 
 
-type Message = RouterOutputs['messages']['list'][number]
+type Message = RouterOutputs['messages']['list']['messages'][number]
 export const getNewMessage = (data: DeepPartial<Message>): Message => Object.assign({
 	id: new ObjectId().toString(),
 	createdAt: new Date(),

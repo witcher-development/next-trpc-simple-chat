@@ -22,7 +22,29 @@ const deleteMessageSchema = z.object({
 
 export const MessagesRouter = router({
 	list: publicProcedure
-		.query(({ ctx }) => ctx.prisma.message.findMany()),
+		.input(z.object({
+			limit: z.number().default(20),
+			cursor: z.string().nullish(), // "cursor" needs to exist, but can be any type
+		}))
+		.query(async ({ ctx, input }) => {
+			const { cursor, limit } = input;
+			const messages = await ctx.prisma.message.findMany({
+				take: limit + 1, // get an extra item at the end which we'll use as next cursor
+				cursor: cursor ? { id: cursor } : undefined,
+				orderBy: {
+					id: 'desc',
+				},
+			});
+			let nextCursor: typeof cursor | undefined = undefined;
+			if (messages.length > limit) {
+				const nextItem = messages.pop();
+				nextCursor = nextItem!.id;
+			}
+			return {
+				messages,
+				nextCursor,
+			};
+		}),
 	post: publicProcedure
 		.input(postMessageSchema)
 		.mutation(async ({ input, ctx }) => {
