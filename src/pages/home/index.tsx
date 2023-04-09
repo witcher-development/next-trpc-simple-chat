@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { TextInput, Button, FileInput, Flex } from '@mantine/core';
+import { TextInput, Button, FileInput, Flex, rem } from '@mantine/core';
+import { IconPaperclip, IconSend, IconTrash } from '@tabler/icons-react';
 
 // import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -59,9 +60,14 @@ export default function HomePage () {
 				}}
 			>
 				<Flex>
-					<FileInput {...getInputProps('image')} />
+					<FileInput
+						{...getInputProps('image')}
+						icon={<IconPaperclip size={rem(14)} />}
+					/>
 					<TextInput {...getInputProps('text')} />
-					<Button type="submit">Post</Button>
+					<Button type="submit">
+						<IconSend size={rem(14)} />
+					</Button>
 				</Flex>
 			</form>
 			<InfiniteScroll
@@ -74,7 +80,9 @@ export default function HomePage () {
 					<li key={id} style={{ height: 100 }}>
 						{text && <p>{ text }</p>}
 						{image && <img src={image} alt="image" width={200} height={100} />}
-						<button onClick={() => deleteMessage({ id })}>delete</button>
+						<Button onClick={() => deleteMessage({ id })}>
+							<IconTrash size={rem(14)} />
+						</Button>
 					</li>
 				)))}
 			</InfiniteScroll>
