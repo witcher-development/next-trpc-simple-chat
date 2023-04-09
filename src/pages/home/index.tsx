@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, zodResolver } from '@mantine/form';
+import { TextInput, Button, FileInput, Flex } from '@mantine/core';
+
+// import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -19,18 +21,17 @@ const styles = {
 
 const chatInputSchema = z.object({
 	text: messageTextSchema,
-	// image always has a value. It is an empty FileList by default.
-	image: imageSchema
+	image: imageSchema.optional()
 });
 export type ChatInputData = z.TypeOf<typeof chatInputSchema>;
 
 export default function HomePage () {
-	const {
-		register,
-		reset,
-		handleSubmit,
-		formState: { errors }
-	} = useForm<ChatInputData>({ resolver: zodResolver(chatInputSchema) });
+	const { onSubmit, reset, getInputProps } = useForm<ChatInputData>({
+		validate: zodResolver(chatInputSchema),
+		initialValues: {
+			text: '',
+		}
+	});
 	const [sort, setSort] = useState<Sort>({
 		field: 'createdAt',
 		order: 'desc'
@@ -41,7 +42,7 @@ export default function HomePage () {
 	const postMessage = usePostMessage(sort);
 	const deleteMessage = useDeleteMessage(sort);
 
-	const sendMessage = handleSubmit((data) => {
+	const sendMessage = onSubmit((data) => {
 		postMessage(data);
 		reset();
 	});
@@ -57,9 +58,11 @@ export default function HomePage () {
 					background: '#fff'
 				}}
 			>
-				<input type="file" {...register('image')} />
-				<input {...register('text')} />
-				<input type="submit" value="Post" />
+				<Flex>
+					<FileInput {...getInputProps('image')} />
+					<TextInput {...getInputProps('text')} />
+					<Button type="submit">Post</Button>
+				</Flex>
 			</form>
 			<InfiniteScroll
 				next={fetchNextPage}
@@ -70,7 +73,7 @@ export default function HomePage () {
 				{data.pages.map(({ messages }) => messages.map(({ id, text, image }) => (
 					<li key={id} style={{ height: 100 }}>
 						{text && <p>{ text }</p>}
-						{image && <img src={image} alt="image" width={200} />}
+						{image && <img src={image} alt="image" width={200} height={100} />}
 						<button onClick={() => deleteMessage({ id })}>delete</button>
 					</li>
 				)))}
