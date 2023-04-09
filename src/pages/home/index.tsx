@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { TextInput, Button, FileInput, Flex, rem } from '@mantine/core';
+import { TextInput, Button, FileInput, Flex, rem, Container, Text, Stack, Box } from '@mantine/core';
 import { IconPaperclip, IconSend, IconTrash } from '@tabler/icons-react';
-
-// import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -12,12 +10,6 @@ import { messageTextSchema } from '~/common/types';
 import { imageSchema } from './utils';
 import { Sort } from './model';
 import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
-
-
-const styles = {
-	width: '100vw',
-	height: '100vh',
-};
 
 
 const chatInputSchema = z.object({
@@ -50,42 +42,58 @@ export default function HomePage () {
 
 	if (status !== 'success') return <></>;
 	return (
-		<div style={styles}>
-			<h1>Chat</h1>
-			<form onSubmit={sendMessage}
-				style={{
-					position: 'fixed',
-					top: '0',
-					background: '#fff'
-				}}
-			>
-				<Flex>
-					<FileInput
-						{...getInputProps('image')}
-						icon={<IconPaperclip size={rem(14)} />}
-					/>
-					<TextInput {...getInputProps('text')} />
-					<Button type="submit">
-						<IconSend size={rem(14)} />
-					</Button>
-				</Flex>
-			</form>
-			<InfiniteScroll
-				next={fetchNextPage}
-				hasMore={hasNextPage || false}
-				loader={<h4>Loading...</h4>}
-				dataLength={data?.pages.length * 20}
-			>
-				{data.pages.map(({ messages }) => messages.map(({ id, text, image }) => (
-					<li key={id} style={{ height: 100 }}>
-						{text && <p>{ text }</p>}
-						{image && <img src={image} alt="image" width={200} height={100} />}
-						<Button onClick={() => deleteMessage({ id })}>
-							<IconTrash size={rem(14)} />
+		<Container size="sm">
+			<Stack spacing="xl">
+				<form onSubmit={sendMessage}
+					// style={{
+					// 	position: 'fixed',
+					// 	top: '0',
+					// 	background: '#fff'
+					// }}
+				>
+					<Flex>
+						<FileInput
+							variant="unstyled"
+							{...getInputProps('image')}
+							icon={<IconPaperclip size={rem(14)} />}
+							clearable
+							valueComponent={() => <></>}
+						/>
+						<TextInput sx={{ width: '100%' }} placeholder='text' variant="unstyled" {...getInputProps('text')} />
+						<Button type="submit">
+							<IconSend size={rem(14)} />
 						</Button>
-					</li>
-				)))}
-			</InfiniteScroll>
-		</div>
+					</Flex>
+				</form>
+				<InfiniteScroll
+					next={fetchNextPage}
+					hasMore={hasNextPage || false}
+					loader={<h4>Loading...</h4>}
+					dataLength={data?.pages.length * 20}
+				>
+					<Stack>
+						{data.pages.map(({ messages }) => messages.map(({ id, text, image }) => (
+							<Stack
+								key={id}
+								sx={(theme) => ({
+									minHeight: 40,
+									position: 'relative',
+									backgroundColor: theme.colors.dark[4]
+								})}
+								spacing="xs"
+							>
+								{image && <img src={image} alt="image" width={200} height={100} />}
+								{text && <Text>{ text }</Text>}
+								<Box sx={{ position: 'absolute', right: 0 }}>
+									<Button onClick={() => deleteMessage({ id })}>
+										<IconTrash size={rem(14)} />
+									</Button>
+								</Box>
+							</Stack>
+						)))}
+					</Stack>
+				</InfiniteScroll>
+			</Stack>
+		</Container>
 	);
 }
