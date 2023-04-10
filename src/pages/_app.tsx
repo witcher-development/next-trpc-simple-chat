@@ -2,6 +2,7 @@ import type { AppType } from 'next/app';
 import { MantineProvider, AppShell } from '@mantine/core';
 
 import { trpc } from '~/utils/trpc';
+import './reset.css';
 import './styles.css';
 
 

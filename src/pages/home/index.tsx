@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { Textarea, Button, FileInput, Flex, rem, Container, Text, Stack, Box } from '@mantine/core';
+import { Textarea, Button, FileInput, Flex, rem, Container, Text, Stack, Box, Image } from '@mantine/core';
 import { useEventListener } from '@mantine/hooks';
 import { IconCirclePlus, IconSend, IconTrash } from '@tabler/icons-react';
 import { z } from 'zod';
@@ -141,22 +141,60 @@ export default function HomePage () {
 					loader={<h4>Loading...</h4>}
 					dataLength={data?.pages.length * 20}
 				>
-					<Stack>
+					<Stack align="start">
 						{data.pages.map(({ messages }) => messages.map(({ id, text, image }) => (
 							<Stack
 								key={id}
 								sx={(theme) => ({
-									minHeight: 40,
 									position: 'relative',
-									backgroundColor: theme.colors.background[1]
+									borderRadius: '0.25rem',
+									backgroundColor: theme.colors.background[1],
+									minWidth: image ? 300 : 0
 								})}
-								spacing="xs"
+								align="center"
+								spacing={0}
 							>
-								{image && <img src={image} alt="image" width={200} height={100} />}
-								{text && <Text>{ text }</Text>}
+								{image && (
+									<Box
+										sx={{
+											borderRadius: '0.25rem',
+											borderBottomLeftRadius: 0,
+											borderBottomRightRadius: 0,
+											overflow: 'hidden',
+											maxWidth: 300,
+											maxHeight: 300
+										}}
+									>
+										<Image
+											src={image}
+											alt="image"
+											sx={{
+												width: '100%',
+												height: '100%',
+												objectFit: 'contain',
+												objectPosition: 'center center'
+											}}
+										/>
+									</Box>
+								)}
+								<Box
+									sx={{
+										padding: `${image ? '5px' : '10px'} 20px 5px`,
+									}}
+								>
+									<Text
+										component="p"
+										sx={{
+											whiteSpace: 'pre-wrap',
+											wordBreak: 'break-word'
+										}}
+									>
+										{ text }
+									</Text>
+								</Box>
 								<Box sx={{ position: 'absolute', right: 0 }}>
-									<Button onClick={() => deleteMessage({ id })} size="xs">
-										<IconTrash size={rem(14)} />
+									<Button onClick={() => deleteMessage({ id })} size="sm" variant="subtle">
+										<IconTrash size={rem(20)} />
 									</Button>
 								</Box>
 							</Stack>
