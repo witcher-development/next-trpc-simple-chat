@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { TextInput, Button, FileInput, Flex, rem, Container, Text, Stack, Box } from '@mantine/core';
-import { IconPaperclip, IconSend, IconTrash } from '@tabler/icons-react';
+import { Textarea, Button, FileInput, Flex, rem, Container, Text, Stack, Box } from '@mantine/core';
+import { useEventListener } from '@mantine/hooks';
+import { IconCirclePlus, IconSend, IconTrash } from '@tabler/icons-react';
 import { z } from 'zod';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -14,15 +15,16 @@ import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
 
 const chatInputSchema = z.object({
 	text: messageTextSchema,
-	image: imageSchema.optional()
+	image: imageSchema.nullable()
 });
 export type ChatInputData = z.TypeOf<typeof chatInputSchema>;
 
 export default function HomePage () {
-	const { onSubmit, reset, getInputProps } = useForm<ChatInputData>({
+	const { values, onSubmit, reset, getInputProps } = useForm<ChatInputData>({
 		validate: zodResolver(chatInputSchema),
 		initialValues: {
 			text: '',
+			image: null
 		}
 	});
 	const [sort, setSort] = useState<Sort>({
@@ -38,33 +40,101 @@ export default function HomePage () {
 	const sendMessage = onSubmit((data) => {
 		postMessage(data);
 		reset();
+		// setValues({ image: undefined });
+	});
+	const textAreaRef = useEventListener('keypress', (event) => {
+		if (event.key === 'Enter') {
+			if (event.shiftKey) return;
+			event.preventDefault();
+			sendMessage();
+		}
 	});
 
 	if (status !== 'success') return <></>;
 	return (
-		<Container size="sm">
-			<Stack spacing="xl">
-				<form onSubmit={sendMessage}
-					// style={{
-					// 	position: 'fixed',
-					// 	top: '0',
-					// 	background: '#fff'
-					// }}
+		<Container size="md">
+			<Stack spacing={40}>
+				<form
+					onSubmit={sendMessage}
+					style={{
+						position: 'sticky',
+						top: '0',
+						zIndex: 2,
+					}}
 				>
-					<Flex>
-						<FileInput
-							variant="unstyled"
-							{...getInputProps('image')}
-							icon={<IconPaperclip size={rem(14)} />}
-							clearable
-							valueComponent={() => <></>}
-						/>
-						<TextInput sx={{ width: '100%' }} placeholder='text' variant="unstyled" {...getInputProps('text')} />
-						<Button type="submit">
-							<IconSend size={rem(14)} />
-						</Button>
-					</Flex>
+					<Box
+						sx={(theme) => ({
+							backgroundColor: theme.colors.background[1],
+							borderRadius: '0.25rem',
+							borderTopLeftRadius: 0,
+							borderTopRightRadius: 0,
+							boxShadow: 'rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px',
+							minHeight: 48
+						})}
+					>
+						<Flex>
+							<FileInput
+								size="lg"
+								variant="unstyled"
+								{...getInputProps('image')}
+								icon={<>{!values.image && <IconCirclePlus size={rem(25)} />}</>}
+								clearable
+								valueComponent={() => <></>}
+								sx={(theme) => ({
+									display: 'flex',
+									position: 'relative',
+									'.mantine-FileInput-input': {
+										height: '100%',
+										paddingLeft: '47px !important',
+										paddingRight: 0
+									},
+									'.mantine-FileInput-error': {
+										position: 'absolute',
+										top: 'calc(100% + 6px)',
+										zIndex: 1,
+										width: 400,
+										padding: '5px 10px',
+										backgroundColor: theme.colors.background[0],
+										border: `1px ${theme.colors.red[9]} solid`,
+										borderRadius: '0.25rem',
+									},
+									'> div': { marginBottom: 0 },
+								})}
+							/>
+							<Textarea
+								ref={textAreaRef}
+								size="lg"
+								autosize
+								minRows={1}
+								sx={{
+									flexGrow: 1,
+									overflowY: 'hidden',
+									'> div': { marginBottom: 0 },
+									'input': { paddingLeft: 8 }
+								}}
+								placeholder="Write a message..."
+								variant="unstyled"
+								{...getInputProps('text')}
+								errorProps={{
+									sx: { display: 'none' }
+								}}
+							/>
+							<Button
+								type="submit"
+								variant="subtle"
+								size="lg"
+								sx={{
+									height: 'auto',
+									paddingLeft: '0.825rem',
+									paddingRight: '0.825rem'
+								}}
+							>
+								<IconSend size={rem(20)} />
+							</Button>
+						</Flex>
+					</Box>
 				</form>
+
 				<InfiniteScroll
 					next={fetchNextPage}
 					hasMore={hasNextPage || false}
@@ -78,14 +148,14 @@ export default function HomePage () {
 								sx={(theme) => ({
 									minHeight: 40,
 									position: 'relative',
-									backgroundColor: theme.colors.dark[4]
+									backgroundColor: theme.colors.background[1]
 								})}
 								spacing="xs"
 							>
 								{image && <img src={image} alt="image" width={200} height={100} />}
 								{text && <Text>{ text }</Text>}
 								<Box sx={{ position: 'absolute', right: 0 }}>
-									<Button onClick={() => deleteMessage({ id })}>
+									<Button onClick={() => deleteMessage({ id })} size="xs">
 										<IconTrash size={rem(14)} />
 									</Button>
 								</Box>

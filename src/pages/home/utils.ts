@@ -16,7 +16,7 @@ export const imageSchema = z
 		if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
-				message: 'Max file size is 5MB',
+				message: '.jpg, .jpeg, .png and .webp files are accepted.',
 			});
 		}
 	});
