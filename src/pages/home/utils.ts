@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import { InfiniteData } from '@tanstack/react-query';
+import { format } from 'date-fns';
+
+import { RouterOutputs } from '~/server/api/root';
+
+import { Message } from './model';
 
 
 const MAX_FILE_SIZE = 500000;
@@ -29,3 +35,27 @@ export const uploadImageToS3 = (image: File, url: string) => {
 		body: image,
 	});
 };
+
+type PagesData = InfiniteData<RouterOutputs['messages']['list']>
+const infiniteDataToMessages = (data: PagesData) => data.pages.reduce<Message[]>(
+	(messages, currentPage) =>	[...messages, ...currentPage.messages],
+	[]
+);
+
+export const getMapOfUniqueFormattedDates = (data: PagesData) => {
+	const dates = new Map<Date, string>();
+
+	const messages = infiniteDataToMessages(data);
+	messages.forEach(({ createdAt }) => {
+		const formatted = format(createdAt, 'MMM d');
+		if (Array.from(dates.values()).includes(formatted)) return;
+		dates.set(createdAt, formatted);
+	});
+
+	return {
+		includes: (date: Date) => Array.from(dates.keys()).includes(date),
+		get: (date: Date) => dates.get(date)
+	};
+};
+
+export const hoursMinutes = (date: Date) => format(date, 'h:mm a');

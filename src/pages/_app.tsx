@@ -14,7 +14,7 @@ const MyApp: AppType = ({ Component, pageProps }) =>
 		theme={{
 			colorScheme: 'dark',
 			colors: {
-				background: ['#212529', '#2C2E33', '', '', '', '', '', '', '', '']
+				background: ['#212529', '#2C2E33', '#373A40', '', '', '', '', '', '', '']
 			},
 		}}
 	>

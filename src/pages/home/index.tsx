@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { Textarea, Button, FileInput, Flex, rem, Container, Text, Stack, Box, Image } from '@mantine/core';
+import { Textarea, Button, FileInput, Flex, rem, Container, Text, Stack, Box, Badge } from '@mantine/core';
 import { useEventListener } from '@mantine/hooks';
 import { IconCirclePlus, IconSend, IconTrash } from '@tabler/icons-react';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { messageTextSchema } from '~/common/types';
 
-import { imageSchema } from './utils';
+import { imageSchema, getMapOfUniqueFormattedDates, hoursMinutes } from './utils';
 import { Sort } from './model';
 import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
 
@@ -51,6 +51,8 @@ export default function HomePage () {
 	});
 
 	if (status !== 'success') return <></>;
+	const formattedDates = getMapOfUniqueFormattedDates(data);
+
 	return (
 		<Container size="md">
 			<Stack spacing={40}>
@@ -142,62 +144,80 @@ export default function HomePage () {
 					dataLength={data?.pages.length * 20}
 				>
 					<Stack align="start">
-						{data.pages.map(({ messages }) => messages.map(({ id, text, image }) => (
-							<Stack
-								key={id}
-								sx={(theme) => ({
-									position: 'relative',
-									borderRadius: '0.25rem',
-									backgroundColor: theme.colors.background[1],
-									minWidth: image ? 300 : 0
-								})}
-								align="center"
-								spacing={0}
-							>
-								{image && (
+						{data.pages.map(({ messages }) => messages.map(({ id, text, image, createdAt }) => (
+							<React.Fragment key={id}>
+								{formattedDates.includes(createdAt) &&
+									<Flex justify="center" align="center" w="100%">
+										<Badge>
+											<time>{formattedDates.get(createdAt)}</time>
+										</Badge>
+									</Flex>
+								}
+								<Stack
+									sx={(theme) => ({
+										position: 'relative',
+										borderRadius: '0.25rem',
+										backgroundColor: theme.colors.background[1],
+										minWidth: image ? 300 : 0
+									})}
+									spacing={0}
+								>
+									{image && (
+										<Flex
+											sx={(theme) => ({
+												borderRadius: '0.25rem',
+												borderBottomLeftRadius: 0,
+												borderBottomRightRadius: 0,
+												backgroundColor: theme.colors.background[2],
+												overflow: 'hidden',
+											})}
+											justify="center"
+										>
+											<Box
+												component="img"
+												src={image}
+												alt="image"
+												sx={{
+													maxWidth: 300,
+													maxHeight: 300
+												}}
+											/>
+										</Flex>
+									)}
 									<Box
 										sx={{
-											borderRadius: '0.25rem',
-											borderBottomLeftRadius: 0,
-											borderBottomRightRadius: 0,
-											overflow: 'hidden',
-											maxWidth: 300,
-											maxHeight: 300
+											padding: `${image ? '15px' : '10px'} 20px 5px`,
+											alignSelf: 'stretch'
 										}}
 									>
-										<Image
-											src={image}
-											alt="image"
+										<Text
+											component="p"
 											sx={{
-												width: '100%',
-												height: '100%',
-												objectFit: 'contain',
-												objectPosition: 'center center'
+												whiteSpace: 'pre-wrap',
+												wordBreak: 'break-word'
 											}}
-										/>
+										>
+											{ text }
+											<Text
+												component="time"
+												c="dimmed"
+												fz="sm"
+												sx={{
+													float: 'right',
+													paddingLeft: 8,
+													marginRight: -8,
+													lineHeight: 1.75
+												}}
+											>{hoursMinutes(createdAt)}</Text>
+										</Text>
 									</Box>
-								)}
-								<Box
-									sx={{
-										padding: `${image ? '5px' : '10px'} 20px 5px`,
-									}}
-								>
-									<Text
-										component="p"
-										sx={{
-											whiteSpace: 'pre-wrap',
-											wordBreak: 'break-word'
-										}}
-									>
-										{ text }
-									</Text>
-								</Box>
-								<Box sx={{ position: 'absolute', right: 0 }}>
-									<Button onClick={() => deleteMessage({ id })} size="sm" variant="subtle">
-										<IconTrash size={rem(20)} />
-									</Button>
-								</Box>
-							</Stack>
+									<Box sx={{ position: 'absolute', right: 0 }}>
+										<Button onClick={() => deleteMessage({ id })} size="sm" variant="subtle">
+											<IconTrash size={rem(20)} />
+										</Button>
+									</Box>
+								</Stack>
+							</React.Fragment>
 						)))}
 					</Stack>
 				</InfiniteScroll>
