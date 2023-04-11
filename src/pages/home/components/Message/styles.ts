@@ -38,6 +38,10 @@ export const useStyles = createStyles((theme, { image, hovered }: Props) => ({
 	deleteButton: {
 		position: 'absolute',
 		left: '100%',
+		'@media (max-width: 1150px)': {
+			left: 'auto',
+			right: 0
+		},
 		height: '100%',
 		display: hovered ? 'block' : 'none'
 	}

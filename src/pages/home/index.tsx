@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { Textarea, Button, FileInput, Flex, rem, Container, Text, Stack, Box, Badge } from '@mantine/core';
+import { Textarea, Button, FileInput, Flex, rem, Container, Stack, Box, Badge } from '@mantine/core';
 import { useEventListener } from '@mantine/hooks';
-import { IconCirclePlus, IconSend, IconTrash } from '@tabler/icons-react';
+import { IconCirclePlus, IconSend } from '@tabler/icons-react';
 import { z } from 'zod';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { messageTextSchema } from '~/common/types';
 import { Message } from '~/pages/home/components/Message';
 
-import { imageSchema, getMapOfUniqueFormattedDates, hoursMinutes } from './utils';
+import { imageSchema, getMapOfUniqueFormattedDates } from './utils';
 import { Sort } from './model';
 import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
 
