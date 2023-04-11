@@ -7,6 +7,7 @@ import { z } from 'zod';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { messageTextSchema } from '~/common/types';
+import { Message } from '~/pages/home/components/Message';
 
 import { imageSchema, getMapOfUniqueFormattedDates, hoursMinutes } from './utils';
 import { Sort } from './model';
@@ -144,79 +145,16 @@ export default function HomePage () {
 					dataLength={data?.pages.length * 20}
 				>
 					<Stack align="start">
-						{data.pages.map(({ messages }) => messages.map(({ id, text, image, createdAt }) => (
-							<React.Fragment key={id}>
-								{formattedDates.includes(createdAt) &&
+						{data.pages.map(({ messages }) => messages.map((message) => (
+							<React.Fragment key={message.id}>
+								{formattedDates.includes(message.createdAt) &&
 									<Flex justify="center" align="center" w="100%">
 										<Badge>
-											<time>{formattedDates.get(createdAt)}</time>
+											<time>{formattedDates.get(message.createdAt)}</time>
 										</Badge>
 									</Flex>
 								}
-								<Stack
-									sx={(theme) => ({
-										position: 'relative',
-										borderRadius: '0.25rem',
-										backgroundColor: theme.colors.background[1],
-										minWidth: image ? 300 : 0
-									})}
-									spacing={0}
-								>
-									{image && (
-										<Flex
-											sx={(theme) => ({
-												borderRadius: '0.25rem',
-												borderBottomLeftRadius: 0,
-												borderBottomRightRadius: 0,
-												backgroundColor: theme.colors.background[2],
-												overflow: 'hidden',
-											})}
-											justify="center"
-										>
-											<Box
-												component="img"
-												src={image}
-												alt="image"
-												sx={{
-													maxWidth: 300,
-													maxHeight: 300
-												}}
-											/>
-										</Flex>
-									)}
-									<Box
-										sx={{
-											padding: `${image ? '15px' : '10px'} 20px 5px`,
-											alignSelf: 'stretch'
-										}}
-									>
-										<Text
-											component="p"
-											sx={{
-												whiteSpace: 'pre-wrap',
-												wordBreak: 'break-word'
-											}}
-										>
-											{ text }
-											<Text
-												component="time"
-												c="dimmed"
-												fz="sm"
-												sx={{
-													float: 'right',
-													paddingLeft: 8,
-													marginRight: -8,
-													lineHeight: 1.75
-												}}
-											>{hoursMinutes(createdAt)}</Text>
-										</Text>
-									</Box>
-									<Box sx={{ position: 'absolute', right: 0 }}>
-										<Button onClick={() => deleteMessage({ id })} size="sm" variant="subtle">
-											<IconTrash size={rem(20)} />
-										</Button>
-									</Box>
-								</Stack>
+								<Message message={message} deleteMessage={() => deleteMessage({ id: message.id })} />
 							</React.Fragment>
 						)))}
 					</Stack>
