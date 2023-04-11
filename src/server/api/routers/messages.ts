@@ -46,6 +46,8 @@ export const MessagesRouter = router({
 				const nextItem = messages.pop();
 				nextCursor = nextItem!.id;
 			}
+			// to showcase skeleton loader
+			await new Promise((res) => setTimeout(res, 200));
 			return {
 				messages,
 				nextCursor,

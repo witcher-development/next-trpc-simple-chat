@@ -5,7 +5,14 @@ import { z } from 'zod';
 
 import { messageTextSchema } from '~/common/types';
 
-import { Message, InfiniteScroll, Form, DayBadge, Sort } from './components';
+import {
+	Message,
+	InfiniteScroll,
+	Form,
+	DayBadge,
+	Sort,
+	ChatSkeleton
+} from './components';
 import { imageSchema, infiniteDataToMessages } from './utils';
 import * as model from './model';
 import { usePostMessage, useDeleteMessage, useGetMessages } from './logic';
@@ -40,13 +47,11 @@ export default function HomePage () {
 	const postMessage = usePostMessage(sort);
 	const deleteMessage = useDeleteMessage(sort);
 
-	if (status !== 'success') return <></>;
-
 	const sendMessage = onSubmit((data) => {
 		postMessage(data);
 		reset();
 	});
-	const messages = infiniteDataToMessages(data);
+	const messages = status === 'success' ? infiniteDataToMessages(data) : [];
 
 	return (
 		<Container size="md">
@@ -60,20 +65,26 @@ export default function HomePage () {
 					getInputPropsHelper={getInputProps}
 				/>
 
-				<InfiniteScroll
-					dataLength={messages.length}
-					hasMore={hasNextPage || false}
-					next={fetchNextPage}
-				>
-					<Stack align="start">
-						{messages.map((message) => (
-							<React.Fragment key={message.id}>
-								<DayBadge messages={messages} currentMessageDate={message.createdAt} />
-								<Message message={message} deleteMessage={() => deleteMessage({ id: message.id })} />
-							</React.Fragment>
-						))}
-					</Stack>
-				</InfiniteScroll>
+				{status === 'success' && (
+					<InfiniteScroll
+						dataLength={messages.length}
+						hasMore={hasNextPage || false}
+						next={fetchNextPage}
+					>
+						<Stack align="start">
+							{messages.map((message) => (
+								<React.Fragment key={message.id}>
+									<DayBadge messages={messages} currentMessageDate={message.createdAt} />
+									<Message
+										message={message}
+										deleteMessage={() => deleteMessage({ id: message.id })}
+									/>
+								</React.Fragment>
+							))}
+						</Stack>
+					</InfiniteScroll>
+				)}
+				{status !== 'success' && <ChatSkeleton />}
 			</Stack>
 		</Container>
 	);

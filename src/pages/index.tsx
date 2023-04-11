@@ -1,6 +1,8 @@
+import dynamic from 'next/dynamic';
+
 import HomePage from '~/pages/home';
 
 
-export default function IndexPage () {
-	return <HomePage />;
-}
+export default dynamic(() => Promise.resolve(HomePage), {
+	ssr: false
+});
