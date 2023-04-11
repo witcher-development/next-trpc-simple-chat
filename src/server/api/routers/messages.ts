@@ -28,7 +28,7 @@ const mapSortFields = (field: z.infer<typeof sortSchema>['field']) => field === 
 export const MessagesRouter = router({
 	list: publicProcedure
 		.input(z.object({
-			limit: z.number().default(20),
+			limit: z.number().default(30),
 			cursor: z.string().nullish(), // "cursor" needs to exist, but can be any type
 			sort: sortSchema
 		}))
