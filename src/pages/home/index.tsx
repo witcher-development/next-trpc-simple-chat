@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
 import { Textarea, Button, FileInput, Flex, rem, Container, Stack, Box, Badge } from '@mantine/core';
 import { useEventListener } from '@mantine/hooks';
-import { IconCirclePlus, IconSend } from '@tabler/icons-react';
+import { IconCirclePlus, IconSend, IconLetterT, IconCalendar, IconArrowNarrowUp, IconArrowNarrowDown } from '@tabler/icons-react';
 import { z } from 'zod';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -54,9 +54,25 @@ export default function HomePage () {
 	if (status !== 'success') return <></>;
 	const formattedDates = getMapOfUniqueFormattedDates(data);
 
+	const toggleSort = (field: Sort['field']) => setSort(({ order }) => ({
+		field,
+		order: order === 'asc' ? 'desc' : 'asc'
+	}));
 	return (
 		<Container size="md">
-			<Stack spacing={40}>
+			<Stack spacing={40} pos="relative">
+				<Flex sx={{ position: 'absolute', top: 54, right: 0 }}>
+					<Button onClick={() => toggleSort('text')} size="xs" variant="outline" sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>
+						<IconLetterT size={rem(20)} />
+						{ sort.field === 'text' && sort.order === 'asc' && <IconArrowNarrowUp size={rem(20)} /> }
+						{ sort.field === 'text' && sort.order === 'desc' && <IconArrowNarrowDown size={rem(20)} /> }
+					</Button>
+					<Button onClick={() => toggleSort('createdAt')} size="xs" variant="outline" sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, borderLeft: 0 }}>
+						<IconCalendar size={rem(20)} />
+						{ sort.field === 'createdAt' && sort.order === 'asc' && <IconArrowNarrowUp size={rem(20)} /> }
+						{ sort.field === 'createdAt' && sort.order === 'desc' && <IconArrowNarrowDown size={rem(20)} /> }
+					</Button>
+				</Flex>
 				<form
 					onSubmit={sendMessage}
 					style={{
