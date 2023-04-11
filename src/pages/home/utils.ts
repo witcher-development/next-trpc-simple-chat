@@ -37,15 +37,14 @@ export const uploadImageToS3 = (image: File, url: string) => {
 };
 
 type PagesData = InfiniteData<RouterOutputs['messages']['list']>
-const infiniteDataToMessages = (data: PagesData) => data.pages.reduce<Message[]>(
+export const infiniteDataToMessages = (data: PagesData) => data.pages.reduce<Message[]>(
 	(messages, currentPage) =>	[...messages, ...currentPage.messages],
 	[]
 );
 
-export const getMapOfUniqueFormattedDates = (data: PagesData) => {
+export const getMapOfUniqueFormattedDates = (messages: Message[]) => {
 	const dates = new Map<Date, string>();
 
-	const messages = infiniteDataToMessages(data);
 	messages.forEach(({ createdAt }) => {
 		const formatted = format(createdAt, 'MMM d');
 		if (Array.from(dates.values()).includes(formatted)) return;

@@ -46,8 +46,8 @@ export const Message = ({ message, deleteMessage }: Props) => {
 				</p>
 			</div>
 			<div className={classes.deleteButton}>
-				<Button onClick={deleteMessage} size="sm" variant="subtle" sx={{ height: '100%' }}>
-					<IconTrash size={rem(20)} />
+				<Button onClick={deleteMessage} size="xs" variant="subtle" sx={{ height: '100%' }}>
+					<IconTrash size={rem(17)} />
 				</Button>
 			</div>
 		</Stack>
