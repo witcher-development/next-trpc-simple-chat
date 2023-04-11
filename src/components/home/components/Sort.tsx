@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Flex, rem } from '@mantine/core';
 import { IconArrowNarrowDown, IconArrowNarrowUp, IconCalendar, IconLetterT } from '@tabler/icons-react';
 
-import * as model from '~/pages/home/model';
+import * as model from '~/components/home/model';
 
 
 const componentsSize = 'xs';

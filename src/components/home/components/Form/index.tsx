@@ -4,7 +4,7 @@ import { useEventListener } from '@mantine/hooks';
 import { GetInputProps } from '@mantine/form/lib/types';
 import { IconCirclePlus, IconSend } from '@tabler/icons-react';
 
-import { ChatInputData } from '~/pages/home';
+import { ChatInputData } from '~/components/home';
 
 import { useStyles } from './styles';
 

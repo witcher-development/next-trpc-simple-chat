@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 
-import HomePage from '~/pages/home';
+import HomePage from 'src/components/home';
 
 
 export default dynamic(() => Promise.resolve(HomePage), {

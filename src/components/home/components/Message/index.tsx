@@ -3,8 +3,8 @@ import { Button, Flex, Stack, Text, rem } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import { IconTrash } from '@tabler/icons-react';
 
-import { hoursMinutes } from '~/pages/home/utils';
-import * as model from '~/pages/home/model';
+import { hoursMinutes } from '~/components/home/utils';
+import * as model from '~/components/home/model';
 
 import { useStyles } from './styles';
 
