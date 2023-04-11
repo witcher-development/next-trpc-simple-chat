@@ -143,6 +143,8 @@ export default function HomePage () {
 					hasMore={hasNextPage || false}
 					loader={<h4>Loading...</h4>}
 					dataLength={data?.pages.length * 20}
+					// allows showing delete button when message takes full width
+					style={{ overflow: 'visible' }}
 				>
 					<Stack align="start">
 						{data.pages.map(({ messages }) => messages.map((message) => (

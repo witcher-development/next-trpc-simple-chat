@@ -1,7 +1,8 @@
 import { createStyles } from '@mantine/core';
 
 
-export const useStyles = createStyles((theme, image: boolean) => ({
+type Props = { image: boolean, hovered: boolean }
+export const useStyles = createStyles((theme, { image, hovered }: Props) => ({
 	container: {
 		position: 'relative',
 		borderRadius: '0.25rem',
@@ -33,5 +34,11 @@ export const useStyles = createStyles((theme, image: boolean) => ({
 		paddingLeft: 8,
 		marginRight: -8,
 		lineHeight: 1.75
+	},
+	deleteButton: {
+		position: 'absolute',
+		left: '100%',
+		height: '100%',
+		display: hovered ? 'block' : 'none'
 	}
 }));
