@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, zodResolver } from '@mantine/form';
-import { Container, Stack, Box } from '@mantine/core';
+import { Container, Stack, Box, Title } from '@mantine/core';
 import { z } from 'zod';
 
 import { messageTextSchema } from '~/common/types';
@@ -65,7 +65,7 @@ export default function HomePage () {
 					getInputPropsHelper={getInputProps}
 				/>
 
-				{status === 'success' && (
+				{status === 'success' && !!messages.length && (
 					<InfiniteScroll
 						dataLength={messages.length}
 						hasMore={hasNextPage || false}
@@ -83,6 +83,9 @@ export default function HomePage () {
 							))}
 						</Stack>
 					</InfiniteScroll>
+				)}
+				{status === 'success' && !messages.length && (
+					<Title order={5} align="center" mt={30}>Nothing here yet</Title>
 				)}
 				{status !== 'success' && <ChatSkeleton />}
 			</Stack>
