@@ -5,6 +5,7 @@ import { GetInputProps } from '@mantine/form/lib/types';
 import { IconCirclePlus, IconSend } from '@tabler/icons-react';
 
 import { ChatInputData } from '~/components/home';
+import { ACCEPTED_IMAGE_TYPES } from '~/components/home/utils';
 
 import { useStyles } from './styles';
 
@@ -47,6 +48,7 @@ export const Form = ({
 					variant="unstyled"
 					className={classes.imageInput}
 					icon={<>{!imageSelected && <IconCirclePlus size={rem(25)} />}</>}
+					accept={ACCEPTED_IMAGE_TYPES.join(',')}
 				/>
 				<Textarea
 					ref={textAreaRef}
